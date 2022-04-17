@@ -30,21 +30,25 @@ class robot_velocity{
 
         void savingPosition(const sensor_msgs::JointState::ConstPtr& msg){
             double delta_t;
-            if(wheelTickPrevious[0] == 0){
-                
-            }
+           
             delta_t = (msg->header.stamp.operator-(this->t_previous)).toSec();
             for(int i=0; i<4; i++){
                 wheelTick[i] = msg->position[i];
-                ROS_INFO("I heard : [%f]", wheelTick[i]);
+                if(wheelTickPrevious[0] != 0){
+                    wheelRpmFromTick[i] = (wheelTick[i]-wheelTickPrevious[i])*2*60*3.14/(encoderResolution*delta_t);
+                }
+                
+                ROS_INFO("I heard : [%f]", wheelRpmFromTick[i]);
             }
             /*
-            ROS_INFO("t previous : [%d]", t_previous);
-            ROS_INFO("t : [%d]", msg->header.stamp);
-            ROS_INFO("Delta t : [%d]", delta_t);
-            this->t_previous = msg->header.stamp;
+            ROS_INFO("t previous : [%f]", t_previous);
+            ROS_INFO("t : [%f]", msg->header.stamp);
+            ROS_INFO("Delta t : [%f]", delta_t);
             */
-        }
+            this->t_previous = msg->header.stamp;
+            for(int j=0; j<4; j++){
+                wheelTickPrevious[j] = wheelTick[j];           }
+            }
         
 };
 
