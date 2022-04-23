@@ -9,22 +9,29 @@
 #include "geometry_msgs/TwistStamped.h"
 #include <dynamic_reconfigure/server.h>
 #include <homework1/parametersConfig.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_ros/transform_broadcaster.h>
 
 enum integrationTypes {EULER, RK};
 
 class robotOdometry{
     private:
+
         ros::NodeHandle n;
         ros::Subscriber sub;
         ros::Publisher pub;
+        ros::Time tPrevious;
 
         double xPrevious;
 		double yPrevious;
 		double thetaPrevious;
-		ros::Time tPrevious;
+		
 
         dynamic_reconfigure::Server<homework1::parametersConfig> server;
         integrationTypes chosenMethod; 
+        tf2_ros::TransformBroadcaster broadcaster;
+        geometry_msgs::TransformStamped transformStamped;
+
         int count = 143997;
 
     public :
@@ -38,9 +45,9 @@ class robotOdometry{
 
             chosenMethod = EULER;
 
-            xPrevious = 0;
-            yPrevious = 0;
-            thetaPrevious = 0;
+            this->n.getParam("/x_initial_pose", this->xPrevious);
+            this->n.getParam("/y_initial_pose", this->yPrevious);
+            this->n.getParam("/theta_initial_pose", this->thetaPrevious);
 
         }
 
@@ -63,7 +70,52 @@ class robotOdometry{
 
             
             thetaNext = this->thetaPrevious + msg->twist.angular.z*deltaT;
+
+            nav_msgs::Odometry odom_msg;
+
+            odom_msg.header.seq = msg->header.seq;
+            odom_msg.header.stamp = msg->header.stamp;
+
+            odom_msg.header.frame_id = "odom";
+            odom_msg.child_frame_id = "base_link";
+
+            odom_msg.pose.pose.position.x = xNext;
+            odom_msg.pose.pose.position.y = yNext;
+            odom_msg.pose.pose.position.z = 0.0;
+
+            tf2::Quaternion thetaQuaternion;
+            thetaQuaternion.setRPY(0, 0, thetaNext);
+            odom_msg.pose.pose.orientation.x = thetaQuaternion.x();
+            odom_msg.pose.pose.orientation.y = thetaQuaternion.y();
+            odom_msg.pose.pose.orientation.z = thetaQuaternion.z();
+            odom_msg.pose.pose.orientation.w = thetaQuaternion.w();
             
+            odom_msg.twist.twist = msg->twist;
+
+            for(int i=0; i<16; i++){
+                odom_msg.twist.covariance[i] = 0.0;
+            }
+
+            for(int i=0; i<16; i++){
+                odom_msg.pose.covariance[i] = 0.0;
+            }
+
+            this->pub.publish(odom_msg);
+            
+            transformStamped.header.stamp = msg->header.stamp;
+            transformStamped.header.frame_id = "odom";
+            transformStamped.child_frame_id = "base_link";
+
+            transformStamped.transform.translation.x = xNext;
+            transformStamped.transform.translation.y = yNext;
+            transformStamped.transform.translation.z = 0.0;
+                
+            transformStamped.transform.rotation.x = thetaQuaternion.x();
+            transformStamped.transform.rotation.y = thetaQuaternion.y();
+            transformStamped.transform.rotation.z = thetaQuaternion.z();
+            transformStamped.transform.rotation.w = thetaQuaternion.w();
+            broadcaster.sendTransform(transformStamped);
+
             printf("seq %d", count);
             printf("\n");
             printf("X position: %f ", xNext);
@@ -93,4 +145,4 @@ int main(int argc, char **argv){
     robotOdometry robotOdometry;
     ros::spin();
     return 0;
-    }
+}

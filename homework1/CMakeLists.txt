@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(homework1)
 
-find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs geometry_msgs nav_msgs dynamic_reconfigure)
+find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs geometry_msgs nav_msgs dynamic_reconfigure tf2 tf2_ros)
 
 generate_dynamic_reconfigure_options(
   cfg/parameters.cfg
