@@ -11,6 +11,7 @@
 #include <homework1/parametersConfig.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_ros/transform_broadcaster.h>
+#include "homework1/givePose.h"
 
 enum integrationTypes {EULER, RK};
 
@@ -21,6 +22,7 @@ class robotOdometry{
         ros::Subscriber sub;
         ros::Publisher pub;
         ros::Time tPrevious;
+        ros::ServiceServer position_service;
 
         double xPrevious;
 		double yPrevious;
@@ -38,6 +40,7 @@ class robotOdometry{
         robotOdometry(){
             this->sub = n.subscribe("/cmd_vel", 1, &robotOdometry::calculateRobotOdometry, this);
             this->pub = n.advertise<nav_msgs::Odometry>("/odom",1);
+            this->server = n.advertiseService("givePose", &robotOdometry::assignPosition, this);
 
             dynamic_reconfigure::Server<homework1::parametersConfig>::CallbackType callbackObject;
             callbackObject = boost::bind(&robotOdometry::integrationMethodHandler, this, _1, _2);
@@ -137,6 +140,16 @@ class robotOdometry{
             }else{
                 this->chosenMethod = RK;
             }
+        }
+
+        bool assignPosition(homework1::givePose::Request  &req,
+                            homework1::givePose::Response &res){
+             this->xPrevious = req.givenX;
+             this->yPrevious = req.givenY;
+             this->thetaPrevious = req.givenTheta;
+
+            return true;
+
         }
 };
 

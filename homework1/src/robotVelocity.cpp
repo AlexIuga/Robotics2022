@@ -7,6 +7,7 @@
 #include "sensor_msgs/JointState.h"
 #include "nav_msgs/Odometry.h"
 #include "geometry_msgs/TwistStamped.h"
+#include "homework1/wheelSpeed.h"
 
 class robotVelocity{
     private:
@@ -15,6 +16,7 @@ class robotVelocity{
         ros::NodeHandle n;
         ros::Subscriber sub;
         ros::Publisher pub;
+        ros::Publisher pub_wheels;
 
         double radius = 0.07; //meters
         double distanceFromCenterX = 0.2; //meters
@@ -36,6 +38,10 @@ class robotVelocity{
          robotVelocity(){
             this->sub = this->n.subscribe("/wheel_states", 1, &robotVelocity::calculateRobotVelocity, this);
             this->pub = this->n.advertise<geometry_msgs::TwistStamped>("/cmd_vel", 1);
+
+            //publisher of wheel custom message on wheels_rpm topic
+            this->pub_wheels = this->n.advertise<homework1::wheelSpeed>("wheels_rpm", 10);
+
             for(int i=0; i<4; i++){
                 wheelTickPrevious[i] = 0;
                 wheelTick[i] = 0;
@@ -61,6 +67,8 @@ class robotVelocity{
             vy = radius*(wheelRpmFromTick[1]-wheelRpmFromTick[3])/2;
             wz = radius*(wheelRpmFromTick[3]-wheelRpmFromTick[0])/(2*(distanceFromCenterX+distanceFromCenterY));
 
+
+
             printf("\n");
             printf("Calculated vx vy w: %f  %f  %f ", vx, vy, wz);
             printf("\n");
@@ -81,10 +89,34 @@ class robotVelocity{
 
             pub.publish(vel_msg);
 
+            //inverts formulae and recalculates wheel speeds
+            publishWheelSpeed(vel_msg.header,vx,vy,wz);
+
+
+
             this->t_previous = msg->header.stamp;
             for(int j=0; j<4; j++){
                 wheelTickPrevious[j] = wheelTick[j];           
             }
+
+
+        }
+        void publishWheelSpeed(Header header, double vx,double vy,double wz){
+            homework1::wheelSpeed wheel_msg;
+            //I have to also assign header, not sure if it-s right
+            msg.header=header;
+            wheel_msg.rpm_fl=(vx-vy-(distanceFromCenterX+distanceFromCenterY)*wz)/radius;
+            wheel_msg.rpm_fr=(vx+vy+(distanceFromCenterX+distanceFromCenterY)*wz)/radius;
+            wheel_msg.rpm_rr=(vx-vy+(distanceFromCenterX+distanceFromCenterY)*wz)/radius;
+            wheel_msg.rpm_rl=(vx+vy-(distanceFromCenterX+distanceFromCenterY)*wz)/radius;
+
+            //to remove
+            printf("\n");
+            printf("Calculated wheel speeds: %f  %f  %f  %f", wheel_msg.rpm_fl, wheel_msg.rpm_fr, wheel_msg.rpm_rr, wheel_msg.rpm_rl);
+            printf("\n");
+
+            this->pub_wheels(wheel_msg);
+
         }
         
 };
