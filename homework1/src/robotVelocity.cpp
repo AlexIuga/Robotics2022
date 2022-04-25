@@ -40,7 +40,7 @@ class robotVelocity{
             this->pub = this->n.advertise<geometry_msgs::TwistStamped>("/cmd_vel", 1);
 
             //publisher of wheel custom message on wheels_rpm topic
-            this->pub_wheels = this->n.advertise<homework1::wheelSpeed>("wheels_rpm", 10);
+            this->pub_wheels = this->n.advertise<homework1::wheelSpeed>("wheels_rpm", 1);
 
             for(int i=0; i<4; i++){
                 wheelTickPrevious[i] = 0;
@@ -90,21 +90,9 @@ class robotVelocity{
             pub.publish(vel_msg);
 
             //inverts formulae and recalculates wheel speeds
-            publishWheelSpeed(vel_msg.header,vx,vy,wz);
-
-
-
-            this->t_previous = msg->header.stamp;
-            for(int j=0; j<4; j++){
-                wheelTickPrevious[j] = wheelTick[j];           
-            }
-
-
-        }
-        void publishWheelSpeed(Header header, double vx,double vy,double wz){
+            //publishWheelSpeed(vel_msg.header,vx,vy,wz);
             homework1::wheelSpeed wheel_msg;
-            //I have to also assign header, not sure if it-s right
-            msg.header=header;
+            wheel_msg.header = vel_msg.header;
             wheel_msg.rpm_fl=(vx-vy-(distanceFromCenterX+distanceFromCenterY)*wz)/radius;
             wheel_msg.rpm_fr=(vx+vy+(distanceFromCenterX+distanceFromCenterY)*wz)/radius;
             wheel_msg.rpm_rr=(vx-vy+(distanceFromCenterX+distanceFromCenterY)*wz)/radius;
@@ -115,9 +103,35 @@ class robotVelocity{
             printf("Calculated wheel speeds: %f  %f  %f  %f", wheel_msg.rpm_fl, wheel_msg.rpm_fr, wheel_msg.rpm_rr, wheel_msg.rpm_rl);
             printf("\n");
 
-            this->pub_wheels(wheel_msg);
+            this->pub_wheels.publish(wheel_msg);
+
+
+
+            this->t_previous = msg->header.stamp;
+            for(int j=0; j<4; j++){
+                wheelTickPrevious[j] = wheelTick[j];           
+            }
+
 
         }
+        /*
+        void publishWheelSpeed(double vx,double vy,double wz){
+            homework1::wheelSpeed wheel_msg;
+            //I have to also assign header, not sure if it-s right
+            wheel_msg.header=header;
+            wheel_msg.rpm_fl=(vx-vy-(distanceFromCenterX+distanceFromCenterY)*wz)/radius;
+            wheel_msg.rpm_fr=(vx+vy+(distanceFromCenterX+distanceFromCenterY)*wz)/radius;
+            wheel_msg.rpm_rr=(vx-vy+(distanceFromCenterX+distanceFromCenterY)*wz)/radius;
+            wheel_msg.rpm_rl=(vx+vy-(distanceFromCenterX+distanceFromCenterY)*wz)/radius;
+
+            //to remove
+            printf("\n");
+            printf("Calculated wheel speeds: %f  %f  %f  %f", wheel_msg.rpm_fl, wheel_msg.rpm_fr, wheel_msg.rpm_rr, wheel_msg.rpm_rl);
+            printf("\n");
+
+            this->pub_wheels.publish(wheel_msg);
+
+        }*/
         
 };
 

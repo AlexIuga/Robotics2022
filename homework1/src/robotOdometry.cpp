@@ -40,7 +40,7 @@ class robotOdometry{
         robotOdometry(){
             this->sub = n.subscribe("/cmd_vel", 1, &robotOdometry::calculateRobotOdometry, this);
             this->pub = n.advertise<nav_msgs::Odometry>("/odom",1);
-            this->server = n.advertiseService("givePose", &robotOdometry::assignPosition, this);
+            this->position_service = n.advertiseService("givePose", &robotOdometry::assignPosition, this);
 
             dynamic_reconfigure::Server<homework1::parametersConfig>::CallbackType callbackObject;
             callbackObject = boost::bind(&robotOdometry::integrationMethodHandler, this, _1, _2);
