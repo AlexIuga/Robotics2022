@@ -40,7 +40,7 @@ class robotVelocity{
             this->pub = this->n.advertise<geometry_msgs::TwistStamped>("/cmd_vel", 1);
 
             //publisher of wheel custom message on wheels_rpm topic
-            this->pub_wheels = this->n.advertise<homework1::wheelSpeed>("wheels_rpm", 1);
+            this->pub_wheels = this->n.advertise<homework1::wheelSpeed>("/wheels_rpm", 1);
 
             for(int i=0; i<4; i++){
                 wheelTickPrevious[i] = 0;
@@ -63,15 +63,24 @@ class robotVelocity{
                     wheelRpmFromTick[i] = (wheelTick[i]-wheelTickPrevious[i])*2*3.14*gearRatio/(encoderResolution*delta_t);
                 }
             }
+
+            //to delete
+            printf("wheel speed read from bag and converted to rpm");
+            printf("\n");
+            printf("Calculated wheel speeds: %f  %f  %f  %f", wheelRpmFromTick[0], wheelRpmFromTick[1], wheelRpmFromTick[2], wheelRpmFromTick[3]);
+            printf("\n");
+
+
             vx = radius*(wheelRpmFromTick[0]+wheelRpmFromTick[1])/2;
             vy = radius*(wheelRpmFromTick[1]-wheelRpmFromTick[3])/2;
             wz = radius*(wheelRpmFromTick[3]-wheelRpmFromTick[0])/(2*(distanceFromCenterX+distanceFromCenterY));
 
 
-
+            //to remove
             printf("\n");
             printf("Calculated vx vy w: %f  %f  %f ", vx, vy, wz);
-            printf("\n");
+
+
             count ++;
 
             geometry_msgs::TwistStamped vel_msg;
@@ -99,10 +108,13 @@ class robotVelocity{
             wheel_msg.rpm_rl=(vx+vy-(distanceFromCenterX+distanceFromCenterY)*wz)/radius;
 
             //to remove
-            printf("\n");
+            //printf("\n");
             printf("Calculated wheel speeds: %f  %f  %f  %f", wheel_msg.rpm_fl, wheel_msg.rpm_fr, wheel_msg.rpm_rr, wheel_msg.rpm_rl);
+            //printf("\n");
+            ROS_INFO("send msg = %d", wheel_msg.header.seq);   // prints to see if header is right
             printf("\n");
 
+            //publishes wheel speeds
             this->pub_wheels.publish(wheel_msg);
 
 
