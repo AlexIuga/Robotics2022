@@ -62,7 +62,7 @@ class robotOdometry{
             if(this->chosenMethod == EULER){
                 xNext = this->xPrevious + (msg->twist.linear.x*cos(thetaPrevious)-msg->twist.linear.y*sin(thetaPrevious))*deltaT;
                 yNext = this->yPrevious + (msg->twist.linear.x*sin(thetaPrevious)+msg->twist.linear.y*cos(thetaPrevious))*deltaT;
-                 printf("Applying EULER");
+                printf("Applying EULER");
                 printf("\n");
             }else{
                 xNext = this->xPrevious + (msg->twist.linear.x*cos(thetaPrevious + msg->twist.angular.z*deltaT*0.5)-msg->twist.linear.y*sin(thetaPrevious + msg->twist.angular.z*deltaT*0.5))*deltaT;

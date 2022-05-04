@@ -21,8 +21,10 @@ class robotVelocity{
         double radius = 0.07; //meters
         double distanceFromCenterX = 0.2; //meters
         double distanceFromCenterY = 0.169; //meters
-        double gearRatio = 0.2; //meters
         double encoderResolution = 42; //counts per revolution
+        double gearRatio = 0.2; //meters
+
+        double shape;
         double vx;
         double vy;
         double wz;
@@ -38,6 +40,10 @@ class robotVelocity{
          robotVelocity(){
             this->sub = this->n.subscribe("/wheel_states", 1, &robotVelocity::calculateRobotVelocity, this);
             this->pub = this->n.advertise<geometry_msgs::TwistStamped>("/cmd_vel", 1);
+            //shape = distanceFromCenterX + distanceFromCenterY;
+            this->n.getParam("rCalibrated", this->radius);
+            this->n.getParam("shapeCalibrated", this->shape);
+            this->n.getParam("nCalibrated", this->encoderResolution);
 
             //publisher of wheel custom message on wheels_rpm topic
             this->pub_wheels = this->n.advertise<homework1::wheelSpeed>("/wheels_rpm", 1);
@@ -73,7 +79,7 @@ class robotVelocity{
 
             vx = radius*(wheelRpmFromTick[0]+wheelRpmFromTick[1])/2;
             vy = radius*(wheelRpmFromTick[1]-wheelRpmFromTick[3])/2;
-            wz = radius*(wheelRpmFromTick[3]-wheelRpmFromTick[0])/(2*(distanceFromCenterX+distanceFromCenterY));
+            wz = radius*(wheelRpmFromTick[3]-wheelRpmFromTick[0])/(2*(shape));
 
 
             //to remove

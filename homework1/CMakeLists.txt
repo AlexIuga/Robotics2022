@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(homework1)
 
-find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs geometry_msgs nav_msgs dynamic_reconfigure tf2 tf2_ros message_generation)
+find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs geometry_msgs nav_msgs dynamic_reconfigure tf2 tf2_ros message_generation message_filters rosbag)
 
 generate_dynamic_reconfigure_options(
   cfg/parameters.cfg
@@ -24,7 +24,7 @@ generate_messages(
         nav_msgs
 )
 
-catkin_package(CATKIN_DEPENDS geometry_msgs nav_msgs std_msgs message_runtime)
+catkin_package(CATKIN_DEPENDS geometry_msgs nav_msgs std_msgs message_runtime message_filters)
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 
@@ -37,3 +37,9 @@ add_executable(robotOdometry src/robotOdometry.cpp)
 add_dependencies(robotOdometry ${PROJECT_NAME}_gencfg)
 target_link_libraries(robotOdometry ${catkin_LIBRARIES})
 
+add_executable(parametersCalibration src/parametersCalibration.cpp) 
+target_link_libraries(parametersCalibration ${catkin_LIBRARIES})
+target_link_libraries(parametersCalibration ${rosbag_LIBRARIES})
+
+add_executable(gtBroadcaster src/gtBroadcaster.cpp) 
+target_link_libraries(gtBroadcaster ${catkin_LIBRARIES})

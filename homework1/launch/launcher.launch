@@ -4,6 +4,10 @@
     <param name="y_initial_pose" value="0.0"/>
     <param name="theta_initial_pose" value="0.0"/>
 
+    <param name="rCalibrated" value="0.0701"/>
+    <param name="shapeCalibrated" value="0.365"/>
+    <param name="nCalibrated" value="47"/>
+
     <node pkg="homework1" type="robotVelocity" name="robotVelocity"/>
     <node pkg="homework1" type="robotOdometry" name="robotOdometry" output="screen"/>
 
