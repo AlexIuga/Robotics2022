@@ -23,8 +23,8 @@ class robotVelocity{
         double distanceFromCenterY = 0.169; //meters
         double encoderResolution = 42; //counts per revolution
         double gearRatio = 0.2; //meters
+        double shape = 0.369;
 
-        double shape;
         double vx;
         double vy;
         double wz;
@@ -32,15 +32,13 @@ class robotVelocity{
         float wheelTickPrevious[4];
         float wheelTick[4];
         float wheelRpmFromTick[4];
-
-        int count =223;
         
     public:
 
          robotVelocity(){
             this->sub = this->n.subscribe("/wheel_states", 1, &robotVelocity::calculateRobotVelocity, this);
             this->pub = this->n.advertise<geometry_msgs::TwistStamped>("/cmd_vel", 1);
-            //shape = distanceFromCenterX + distanceFromCenterY;
+            
             this->n.getParam("rCalibrated", this->radius);
             this->n.getParam("shapeCalibrated", this->shape);
             this->n.getParam("nCalibrated", this->encoderResolution);
@@ -62,7 +60,7 @@ class robotVelocity{
             double delta_t;
            
             delta_t = (msg->header.stamp.operator-(this->t_previous)).toSec();
-            printf("%d Calculated rad/min: ", count);
+            
             for(int i=0; i<4; i++){
                 wheelTick[i] = msg->position[i];
                 if(wheelTickPrevious[0] != 0){
@@ -70,24 +68,9 @@ class robotVelocity{
                 }
             }
 
-            //to delete
-            printf("wheel speed read from bag and converted to rpm");
-            printf("\n");
-            printf("Calculated wheel speeds: %f  %f  %f  %f", wheelRpmFromTick[0], wheelRpmFromTick[1], wheelRpmFromTick[2], wheelRpmFromTick[3]);
-            printf("\n");
-
-
             vx = radius*(wheelRpmFromTick[0]+wheelRpmFromTick[1])/2;
             vy = radius*(wheelRpmFromTick[1]-wheelRpmFromTick[3])/2;
             wz = radius*(wheelRpmFromTick[3]-wheelRpmFromTick[0])/(2*(shape));
-
-
-            //to remove
-            printf("\n");
-            printf("Calculated vx vy w: %f  %f  %f ", vx, vy, wz);
-
-
-            count ++;
 
             geometry_msgs::TwistStamped vel_msg;
             vel_msg.header.frame_id = "base_link";
@@ -105,7 +88,6 @@ class robotVelocity{
             pub.publish(vel_msg);
 
             //inverts formulae and recalculates wheel speeds
-            //publishWheelSpeed(vel_msg.header,vx,vy,wz);
             homework1::wheelSpeed wheel_msg;
             wheel_msg.header = vel_msg.header;
             wheel_msg.rpm_fl=(vx-vy-(distanceFromCenterX+distanceFromCenterY)*wz)/radius;
@@ -113,17 +95,8 @@ class robotVelocity{
             wheel_msg.rpm_rr=(vx-vy+(distanceFromCenterX+distanceFromCenterY)*wz)/radius;
             wheel_msg.rpm_rl=(vx+vy-(distanceFromCenterX+distanceFromCenterY)*wz)/radius;
 
-            //to remove
-            //printf("\n");
-            printf("Calculated wheel speeds: %f  %f  %f  %f", wheel_msg.rpm_fl, wheel_msg.rpm_fr, wheel_msg.rpm_rr, wheel_msg.rpm_rl);
-            //printf("\n");
-            ROS_INFO("send msg = %d", wheel_msg.header.seq);   // prints to see if header is right
-            printf("\n");
-
             //publishes wheel speeds
             this->pub_wheels.publish(wheel_msg);
-
-
 
             this->t_previous = msg->header.stamp;
             for(int j=0; j<4; j++){
@@ -132,25 +105,6 @@ class robotVelocity{
 
 
         }
-        /*
-        void publishWheelSpeed(double vx,double vy,double wz){
-            homework1::wheelSpeed wheel_msg;
-            //I have to also assign header, not sure if it-s right
-            wheel_msg.header=header;
-            wheel_msg.rpm_fl=(vx-vy-(distanceFromCenterX+distanceFromCenterY)*wz)/radius;
-            wheel_msg.rpm_fr=(vx+vy+(distanceFromCenterX+distanceFromCenterY)*wz)/radius;
-            wheel_msg.rpm_rr=(vx-vy+(distanceFromCenterX+distanceFromCenterY)*wz)/radius;
-            wheel_msg.rpm_rl=(vx+vy-(distanceFromCenterX+distanceFromCenterY)*wz)/radius;
-
-            //to remove
-            printf("\n");
-            printf("Calculated wheel speeds: %f  %f  %f  %f", wheel_msg.rpm_fl, wheel_msg.rpm_fr, wheel_msg.rpm_rr, wheel_msg.rpm_rl);
-            printf("\n");
-
-            this->pub_wheels.publish(wheel_msg);
-
-        }*/
-        
 };
 
 int main(int argc, char **argv){

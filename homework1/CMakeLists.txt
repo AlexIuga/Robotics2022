@@ -40,6 +40,3 @@ target_link_libraries(robotOdometry ${catkin_LIBRARIES})
 add_executable(parametersCalibration src/parametersCalibration.cpp) 
 target_link_libraries(parametersCalibration ${catkin_LIBRARIES})
 target_link_libraries(parametersCalibration ${rosbag_LIBRARIES})
-
-add_executable(gtBroadcaster src/gtBroadcaster.cpp) 
-target_link_libraries(gtBroadcaster ${catkin_LIBRARIES})

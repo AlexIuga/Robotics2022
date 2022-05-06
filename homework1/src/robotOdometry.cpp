@@ -62,13 +62,9 @@ class robotOdometry{
             if(this->chosenMethod == EULER){
                 xNext = this->xPrevious + (msg->twist.linear.x*cos(thetaPrevious)-msg->twist.linear.y*sin(thetaPrevious))*deltaT;
                 yNext = this->yPrevious + (msg->twist.linear.x*sin(thetaPrevious)+msg->twist.linear.y*cos(thetaPrevious))*deltaT;
-                printf("Applying EULER");
-                printf("\n");
             }else{
                 xNext = this->xPrevious + (msg->twist.linear.x*cos(thetaPrevious + msg->twist.angular.z*deltaT*0.5)-msg->twist.linear.y*sin(thetaPrevious + msg->twist.angular.z*deltaT*0.5))*deltaT;
                 yNext = this->yPrevious + (msg->twist.linear.x*sin(thetaPrevious + msg->twist.angular.z*deltaT*0.5)+msg->twist.linear.y*cos(thetaPrevious + msg->twist.angular.z*deltaT*0.5))*deltaT;
-                printf("Applying RUNGE KUTTA");
-                printf("\n");
             }
 
             
@@ -119,15 +115,6 @@ class robotOdometry{
             transformStamped.transform.rotation.w = thetaQuaternion.w();
             broadcaster.sendTransform(transformStamped);
 
-            printf("seq %d", count);
-            printf("\n");
-            printf("X position: %f ", xNext);
-            printf("\n");
-            printf("Y position: %f ", yNext);
-            printf("\n");
-            printf("Theta position: %f ", thetaNext);
-            printf("\n");
-            count++;
             this->xPrevious = xNext;
             this->yPrevious = yNext;
             this->thetaPrevious = thetaNext;
@@ -142,8 +129,7 @@ class robotOdometry{
             }
         }
 
-        bool assignPosition(homework1::givePose::Request  &req,
-                            homework1::givePose::Response &res){
+        bool assignPosition(homework1::givePose::Request  &req, homework1::givePose::Response &res){
              this->xPrevious = req.givenX;
              this->yPrevious = req.givenY;
              this->thetaPrevious = req.givenTheta;
